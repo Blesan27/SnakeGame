@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            Small Game
+        </title>
+    </head>
+    <body>
+        <script>
+            var body = document.querySelector("body");
+            body.style.backgroundColor = "black";
+
+            var borderBox = document.createElement("div");
+            borderBox.style.position = "absolute";
+            borderBox.style.left = "4vh";
+            borderBox.style.top = "4vh";
+            borderBox.style.width = "91vh";
+            borderBox.style.height = "91vh";
+            borderBox.style.backgroundColor = "transparent";
+            borderBox.style.border = "4px double white";
+            body.appendChild(borderBox);
+
+            // ================================= Helper Functions ===============================
+            function getValidPosition(pos){
+                pos = Math.min(pos, 90);
+                pos = Math.max(pos, 5);
+                return pos;
+            }
+
+            // ================================== Directions ==========================================
+            var currentDirection = 1;
+            var directions = [  [0,-1],         //left
+                                [-1,0],         //up
+                                [0, 1],         //right
+                                [1, 0]]         //down
+            var rotation = [-90, 0, 90, 180];
+
+            // ======================================= Score =====================================
+            var Score = document.createElement("div");
+            var currentScore = 0;
+            Score.style.backgroundColor = "transparent";
+            Score.style.position = "absolute";
+            Score.innerHTML = "Score : 0";
+            Score.style.top = "5vh";
+            Score.style.left = "105vh";
+            Score.style.color = "white";
+            Score.style.fontSize = "5ex";
+
+            body.appendChild(Score);
+            
+            // ======================================== Box ======================================
+            var topPos = 50,leftPos = 50;
+            var box = document.createElement("div");
+            box.style.backgroundColor = "white";
+            box.style.position = "absolute";
+            box.style.top = "50vh";
+            box.style.left = "50vh";
+            box.style.width="5vh";
+            box.style.height="5vh";
+            box.style.borderRadius = "10%";
+            box.style.transition = "top 0.30s, left 0.30s";
+            box.style.transitionTimingFunction="linear";
+            
+            var leye = document.createElement("div");
+            leye.style.backgroundColor = "red";
+            leye.style.position = "absolute";
+            leye.style.top = "-5%";
+            leye.style.left = "25%";
+            leye.style.width="20%";
+            leye.style.height="20%";
+            leye.style.borderRadius = "45%";
+
+            var reye = document.createElement("div");
+            reye.style.backgroundColor = "red";
+            reye.style.position = "absolute";
+            reye.style.top = "-5%";
+            reye.style.right = "25%";
+            reye.style.width="20%";
+            reye.style.height="20%";
+            reye.style.borderRadius = "45%";
+            
+            box.appendChild(leye);
+            box.appendChild(reye);
+
+            body.appendChild(box);
+
+            function moveBox(){
+                topPos += directions[currentDirection][0]*5;
+                leftPos += directions[currentDirection][1]*5;
+
+                topPos = getValidPosition(topPos);
+                leftPos = getValidPosition(leftPos);
+
+                // console.log(t
+                // console.log(leftPos);
+                if(topPos == appleTopPos && leftPos == appleLeftPos){
+                    console.log("Caught Apple");
+                    placeApple();
+                    currentScore += 10;
+                    Score.innerHTML = "Score : "+currentScore;
+                    boxArray[boxArray.length] = createNewBox(boxArray[boxArray.length-1].style.top,boxArray[boxArray.length-1].style.left);
+                    body.append(boxArray[boxArray.length-1]);
+                }
+                // console.log(boxArray);
+                for(let i=boxArray.length-1 ; i>0 ;i--){
+                    // console.log(i+" "+boxArray.length);
+                    boxArray[i].style.top = boxArray[i-1].style.top;
+                    boxArray[i].style.left = boxArray[i-1].style.left;
+                }
+                boxArray[0].style.transform = "rotate("+rotation[currentDirection]+"deg)";
+                boxArray[0].style.top = topPos+"vh";
+                boxArray[0].style.left = leftPos+"vh";
+
+            }
+            function createNewBox(top,left){
+                console.log("Create new Box at "+top+" "+left);
+                let box = document.createElement("div");
+                box.style.backgroundColor = "white";
+                box.style.position = "absolute";
+                box.style.top = top+"vh";
+                box.style.left = left+"vh";
+                box.style.width="5vh";
+                box.style.height="5vh";
+                box.style.borderRadius = "10%";
+                box.style.transition = "top 0.30s, left 0.30s";
+                box.style.transitionTimingFunction="linear";
+                return box;
+            }
+
+            boxArray = [];
+            boxArray[0] = box;
+
+
+            // ====================================== Apple =======================================
+            var appleBox = document.createElement("div");
+            appleBox.style.position = "absolute";
+            appleBox.style.width = "5vh";
+            appleBox.style.height = "5vh";
+            appleBox.style.backgroundColor = "red";
+            appleBox.style.borderRadius = "50%";
+            // appleBox.style.transition = "all 2s";
+            var appleTopPos = 0, appleLeftPos = 0;
+            placeApple();
+
+            body.appendChild(appleBox);
+
+            function placeApple(){
+                appleTopPos = getValidPosition(Math.floor((Math.random()*100)/5)*5);
+                appleLeftPos = getValidPosition(Math.floor((Math.random()*100)/5)*5);
+                console.log("Placing Apple to "+appleTopPos+" "+appleLeftPos);
+                appleBox.style.top = appleTopPos+"vh";
+                appleBox.style.left = appleLeftPos+"vh";
+            }
+
+            
+            // ================================== Event Listeners ======================================
+            document.addEventListener("keydown", (event)=>{
+                // console.log(event.key+" "+event.code);
+                switch(event.code){
+                    case "ArrowUp":
+                        if(currentDirection == 0 || currentDirection == 2){
+                            currentDirection = 1;
+                        }
+                        break;
+                    case "ArrowDown":
+                        if(currentDirection == 0 || currentDirection == 2){
+                            currentDirection = 3;
+                        }
+                        break;
+                    case "ArrowLeft":
+                        if(currentDirection == 1 || currentDirection == 3){
+                            currentDirection = 0;
+                        }
+                        break;
+                    case "ArrowRight":
+                        if(currentDirection == 1 || currentDirection == 3){
+                            currentDirection = 2;
+                        }
+                        break;
+                    default:
+                        moveBox();
+                        break;
+                }
+                // moveBox();
+            });
+
+            // ===================================== Game Loop ==========================================
+            setInterval(moveBox, 300);
+        </script>
+    </body>
+</html>

@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>
-            Small Game
+            Snake Game
         </title>
     </head>
     <body>
@@ -19,12 +19,34 @@
             borderBox.style.backgroundColor = "transparent";
             borderBox.style.border = "4px double white";
             body.appendChild(borderBox);
-
+            // ==================================== Constants ===================================
+            const BOX_WIDTH = "5vh";
+            const BOX_HEIGHT = "5vh";
+            const BOX_BORDER_RADIUS = "10%";
+            const BOX_TRANSITION = "top 0.30s, left 0.30s";
+            const BOX_TRANSITIONTIMINGFUNCTION = "linear";
+            const BOX_BACKGROUND_COLOR = "white";
+            const SNAKE_SPEED = 5;
             // ================================= Helper Functions ===============================
             function getValidPosition(pos){
                 pos = Math.min(pos, 90);
                 pos = Math.max(pos, 5);
                 return pos;
+            }
+
+            function getNewBox(top,left){
+                console.log("Create new Box at "+top+" "+left);
+                let box = document.createElement("div");
+                box.style.backgroundColor = BOX_BACKGROUND_COLOR;
+                box.style.position = "absolute";
+                box.style.top = top+"vh";
+                box.style.left = left+"vh";
+                box.style.width = BOX_WIDTH;
+                box.style.height = BOX_HEIGHT;
+                box.style.borderRadius = BOX_BORDER_RADIUS;
+                box.style.transition = BOX_TRANSITION;
+                box.style.transitionTimingFunction = BOX_TRANSITIONTIMINGFUNCTION;
+                return box;
             }
 
             // ================================== Directions ==========================================
@@ -47,19 +69,23 @@
             Score.style.fontSize = "5ex";
 
             body.appendChild(Score);
+
+            function updateScore(score){
+                Score.innerHTML = "Score : "+score;
+            }
             
-            // ======================================== Box ======================================
+            // ======================================== SNAKE ======================================
             var topPos = 50,leftPos = 50;
-            var box = document.createElement("div");
-            box.style.backgroundColor = "white";
-            box.style.position = "absolute";
-            box.style.top = "50vh";
-            box.style.left = "50vh";
-            box.style.width="5vh";
-            box.style.height="5vh";
-            box.style.borderRadius = "10%";
-            box.style.transition = "top 0.30s, left 0.30s";
-            box.style.transitionTimingFunction="linear";
+            var head = document.createElement("div");
+            head.style.backgroundColor = BOX_BACKGROUND_COLOR;
+            head.style.position = "absolute";
+            head.style.top = "50vh";
+            head.style.left = "50vh";
+            head.style.width = BOX_WIDTH;
+            head.style.height = BOX_HEIGHT;
+            head.style.borderRadius = BOX_BORDER_RADIUS;
+            head.style.transition = BOX_TRANSITION;
+            head.style.transitionTimingFunction = BOX_TRANSITIONTIMINGFUNCTION;
             
             var leye = document.createElement("div");
             leye.style.backgroundColor = "red";
@@ -79,57 +105,38 @@
             reye.style.height="20%";
             reye.style.borderRadius = "45%";
             
-            box.appendChild(leye);
-            box.appendChild(reye);
+            head.appendChild(leye);
+            head.appendChild(reye);
 
-            body.appendChild(box);
+            body.appendChild(head);
 
-            function moveBox(){
-                topPos += directions[currentDirection][0]*5;
-                leftPos += directions[currentDirection][1]*5;
+            snake = [];
+            snake[0] = head;
+
+            function moveSnake(){
+                topPos += directions[currentDirection][0]*SNAKE_SPEED;
+                leftPos += directions[currentDirection][1]*SNAKE_SPEED;
 
                 topPos = getValidPosition(topPos);
                 leftPos = getValidPosition(leftPos);
 
-                // console.log(t
-                // console.log(leftPos);
                 if(topPos == appleTopPos && leftPos == appleLeftPos){
                     console.log("Caught Apple");
                     placeApple();
                     currentScore += 10;
-                    Score.innerHTML = "Score : "+currentScore;
-                    boxArray[boxArray.length] = createNewBox(boxArray[boxArray.length-1].style.top,boxArray[boxArray.length-1].style.left);
-                    body.append(boxArray[boxArray.length-1]);
+                    updateScore(currentScore);
+                    snake[snake.length] = getNewBox(snake[snake.length-1].style.top,snake[snake.length-1].style.left);
+                    body.append(snake[snake.length-1]);
                 }
-                // console.log(boxArray);
-                for(let i=boxArray.length-1 ; i>0 ;i--){
-                    // console.log(i+" "+boxArray.length);
-                    boxArray[i].style.top = boxArray[i-1].style.top;
-                    boxArray[i].style.left = boxArray[i-1].style.left;
+                for(let i=snake.length-1 ; i>0 ;i--){
+                    snake[i].style.top = snake[i-1].style.top;
+                    snake[i].style.left = snake[i-1].style.left;
                 }
-                boxArray[0].style.transform = "rotate("+rotation[currentDirection]+"deg)";
-                boxArray[0].style.top = topPos+"vh";
-                boxArray[0].style.left = leftPos+"vh";
+                snake[0].style.transform = "rotate("+rotation[currentDirection]+"deg)";
+                snake[0].style.top = topPos+"vh";
+                snake[0].style.left = leftPos+"vh";
 
             }
-            function createNewBox(top,left){
-                console.log("Create new Box at "+top+" "+left);
-                let box = document.createElement("div");
-                box.style.backgroundColor = "white";
-                box.style.position = "absolute";
-                box.style.top = top+"vh";
-                box.style.left = left+"vh";
-                box.style.width="5vh";
-                box.style.height="5vh";
-                box.style.borderRadius = "10%";
-                box.style.transition = "top 0.30s, left 0.30s";
-                box.style.transitionTimingFunction="linear";
-                return box;
-            }
-
-            boxArray = [];
-            boxArray[0] = box;
-
 
             // ====================================== Apple =======================================
             var appleBox = document.createElement("div");
@@ -138,7 +145,6 @@
             appleBox.style.height = "5vh";
             appleBox.style.backgroundColor = "red";
             appleBox.style.borderRadius = "50%";
-            // appleBox.style.transition = "all 2s";
             var appleTopPos = 0, appleLeftPos = 0;
             placeApple();
 
@@ -178,14 +184,13 @@
                         }
                         break;
                     default:
-                        moveBox();
+                        moveSnake();
                         break;
                 }
-                // moveBox();
             });
 
             // ===================================== Game Loop ==========================================
-            setInterval(moveBox, 300);
+            setInterval(moveSnake, 300);
         </script>
     </body>
 </html>

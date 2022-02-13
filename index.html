@@ -7,18 +7,26 @@
     </head>
     <body>
         <script>
+            // ==================================== Variables ===================================
+            var tookStep = true;
+            var snakeBody = new Set();
+            var setIntervalID;
             var body = document.querySelector("body");
+            var headTopPos = 50,headLeftPos = 50;
+            var tailPos = "";
+            
             body.style.backgroundColor = "black";
 
-            var borderBox = document.createElement("div");
-            borderBox.style.position = "absolute";
-            borderBox.style.left = "4vh";
-            borderBox.style.top = "4vh";
-            borderBox.style.width = "91vh";
-            borderBox.style.height = "91vh";
-            borderBox.style.backgroundColor = "transparent";
-            borderBox.style.border = "4px double white";
-            body.appendChild(borderBox);
+            var gameBox = document.createElement("div");
+            gameBox.style.position = "absolute";
+            gameBox.style.left = "4vh";
+            gameBox.style.top = "4vh";
+            gameBox.style.width = "91vh";
+            gameBox.style.height = "91vh";
+            gameBox.style.backgroundColor = "transparent";
+            gameBox.style.border = "4px double white";
+            body.appendChild(gameBox);
+
             // ==================================== Constants ===================================
             const BOX_WIDTH = "5vh";
             const BOX_HEIGHT = "5vh";
@@ -28,6 +36,7 @@
             const BOX_BACKGROUND_COLOR = "white";
             const SNAKE_SPEED = 5;
             // ================================= Helper Functions ===============================
+
             function getValidPosition(pos){
                 pos = Math.min(pos, 90);
                 pos = Math.max(pos, 5);
@@ -47,6 +56,20 @@
                 box.style.transition = BOX_TRANSITION;
                 box.style.transitionTimingFunction = BOX_TRANSITIONTIMINGFUNCTION;
                 return box;
+            }
+            function isGameOver(headTopPos,headLeftPos){
+                if(snakeBody.has(headTopPos+"vh"+headLeftPos+"vh")){
+                    return true;
+                }
+                if(headTopPos!=getValidPosition(headTopPos) || headLeftPos!=getValidPosition(headLeftPos)){
+                    return true;
+                }
+                return false;
+            }
+            function gameOver(){
+                clearInterval(setIntervalID);
+                gameBox.style.borderColor = "red";
+                console.log("GAME OVER");
             }
 
             // ================================== Directions ==========================================
@@ -75,7 +98,6 @@
             }
             
             // ======================================== SNAKE ======================================
-            var topPos = 50,leftPos = 50;
             var head = document.createElement("div");
             head.style.backgroundColor = BOX_BACKGROUND_COLOR;
             head.style.position = "absolute";
@@ -112,30 +134,42 @@
 
             snake = [];
             snake[0] = head;
+            snakeBody.add(head.style.top+head.style.left);
 
             function moveSnake(){
-                topPos += directions[currentDirection][0]*SNAKE_SPEED;
-                leftPos += directions[currentDirection][1]*SNAKE_SPEED;
+                snakeBody.delete(tailPos);
+                tookStep = true;
 
-                topPos = getValidPosition(topPos);
-                leftPos = getValidPosition(leftPos);
+                headTopPos += directions[currentDirection][0]*SNAKE_SPEED;
+                headLeftPos += directions[currentDirection][1]*SNAKE_SPEED;
+                
+                if(isGameOver(headTopPos,headLeftPos))gameOver();
 
-                if(topPos == appleTopPos && leftPos == appleLeftPos){
+                headTopPos = getValidPosition(headTopPos);
+                headLeftPos = getValidPosition(headLeftPos);
+
+                if(headTopPos == appleheadTopPos && headLeftPos == appleheadLeftPos){
                     console.log("Caught Apple");
                     placeApple();
                     currentScore += 10;
                     updateScore(currentScore);
                     snake[snake.length] = getNewBox(snake[snake.length-1].style.top,snake[snake.length-1].style.left);
+                    console.log(snake);
+                    //TODO making touching body stoping snake
+                    //snakeBody is adding empty string
+                    snakeBody.add(""+snake[snake.length-2].style.top+""+snake[snake.length-2].style.left);
+
                     body.append(snake[snake.length-1]);
                 }
                 for(let i=snake.length-1 ; i>0 ;i--){
                     snake[i].style.top = snake[i-1].style.top;
                     snake[i].style.left = snake[i-1].style.left;
                 }
+                tailPos = snake[snake.length-1].style.top+snake[snake.length-1].style.left;
                 snake[0].style.transform = "rotate("+rotation[currentDirection]+"deg)";
-                snake[0].style.top = topPos+"vh";
-                snake[0].style.left = leftPos+"vh";
-
+                snake[0].style.top = headTopPos+"vh";
+                snake[0].style.left = headLeftPos+"vh";
+                snakeBody.add(snake[0].style.top+snake[0].style.left);
             }
 
             // ====================================== Apple =======================================
@@ -145,42 +179,49 @@
             appleBox.style.height = "5vh";
             appleBox.style.backgroundColor = "red";
             appleBox.style.borderRadius = "50%";
-            var appleTopPos = 0, appleLeftPos = 0;
+            var appleheadTopPos = 0, appleheadLeftPos = 0;
             placeApple();
 
             body.appendChild(appleBox);
 
             function placeApple(){
-                appleTopPos = getValidPosition(Math.floor((Math.random()*100)/5)*5);
-                appleLeftPos = getValidPosition(Math.floor((Math.random()*100)/5)*5);
-                console.log("Placing Apple to "+appleTopPos+" "+appleLeftPos);
-                appleBox.style.top = appleTopPos+"vh";
-                appleBox.style.left = appleLeftPos+"vh";
+                appleheadTopPos = getValidPosition(Math.floor((Math.random()*100)/5)*5);
+                appleheadLeftPos = getValidPosition(Math.floor((Math.random()*100)/5)*5);
+                console.log("Placing Apple to "+appleheadTopPos+" "+appleheadLeftPos);
+                appleBox.style.top = appleheadTopPos+"vh";
+                appleBox.style.left = appleheadLeftPos+"vh";
             }
 
             
             // ================================== Event Listeners ======================================
             document.addEventListener("keydown", (event)=>{
+                console.log(snakeBody);
+                if(!tookStep)return;
                 // console.log(event.key+" "+event.code);
                 switch(event.code){
                     case "ArrowUp":
                         if(currentDirection == 0 || currentDirection == 2){
                             currentDirection = 1;
+                            
+                            tookStep = false;
                         }
                         break;
                     case "ArrowDown":
                         if(currentDirection == 0 || currentDirection == 2){
                             currentDirection = 3;
+                            tookStep = false;
                         }
                         break;
                     case "ArrowLeft":
                         if(currentDirection == 1 || currentDirection == 3){
                             currentDirection = 0;
+                            tookStep = false;
                         }
                         break;
                     case "ArrowRight":
                         if(currentDirection == 1 || currentDirection == 3){
                             currentDirection = 2;
+                            tookStep = false;
                         }
                         break;
                     default:
@@ -190,7 +231,7 @@
             });
 
             // ===================================== Game Loop ==========================================
-            setInterval(moveSnake, 300);
+            setIntervalID = setInterval(moveSnake, 300);
         </script>
     </body>
 </html>

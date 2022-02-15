@@ -12,6 +12,7 @@
             var snakeBody = new Set();
             var setIntervalID;
             var body = document.querySelector("body");
+            var appleheadTopPos = 0, appleheadLeftPos = 0;
             var headTopPos = 50,headLeftPos = 50;
             var tailPos = "";
             
@@ -179,7 +180,6 @@
             appleBox.style.height = "5vh";
             appleBox.style.backgroundColor = "red";
             appleBox.style.borderRadius = "50%";
-            var appleheadTopPos = 0, appleheadLeftPos = 0;
             placeApple();
 
             body.appendChild(appleBox);
@@ -187,6 +187,11 @@
             function placeApple(){
                 appleheadTopPos = getValidPosition(Math.floor((Math.random()*100)/5)*5);
                 appleheadLeftPos = getValidPosition(Math.floor((Math.random()*100)/5)*5);
+                while(snakeBody.has(appleheadTopPos+"vh"+appleheadLeftPos+"vh")){
+                    appleheadTopPos = getValidPosition(Math.floor((Math.random()*100)/5)*5);
+                    appleheadLeftPos = getValidPosition(Math.floor((Math.random()*100)/5)*5);
+                    console.log("is Apple to "+appleheadTopPos+" "+appleheadLeftPos);
+                }
                 console.log("Placing Apple to "+appleheadTopPos+" "+appleheadLeftPos);
                 appleBox.style.top = appleheadTopPos+"vh";
                 appleBox.style.left = appleheadLeftPos+"vh";
